@@ -1,0 +1,13 @@
+{
+  "org": "LEVIATHAN Lab Range",
+  "operator": "lab@leviathan.local",
+  "expires": "2099-12-31",
+  "mode": "lab",
+  "targets": [
+    "127.0.0.1"
+  ],
+  "exclude": [],
+  "crown_jewels": [
+    "payments-db"
+  ]
+}

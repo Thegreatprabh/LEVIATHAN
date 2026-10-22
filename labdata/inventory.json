@@ -1,0 +1,81 @@
+{
+  "assets": [
+    {
+      "id": "internet",
+      "kind": "entry",
+      "label": "Internet (attacker start)"
+    },
+    {
+      "id": "webshop",
+      "kind": "webapp",
+      "host": "127.0.0.1",
+      "label": "Lab Webshop"
+    },
+    {
+      "id": "filesrv",
+      "kind": "service",
+      "host": "127.0.0.1",
+      "label": "Lab File Server"
+    },
+    {
+      "id": "payments-db",
+      "kind": "db",
+      "host": "127.0.0.1",
+      "label": "Payments DB (canary data)",
+      "value": 100,
+      "crown": true
+    }
+  ],
+  "edges": [
+    {
+      "src": "internet",
+      "dst": "webshop",
+      "technique": "public https reach",
+      "cost": 0.05,
+      "grants": [
+        "reach:webshop"
+      ],
+      "check": "http-reach",
+      "params": {
+        "target": "http://127.0.0.1:8771"
+      },
+      "detail": "webshop is internet-facing"
+    },
+    {
+      "src": "webshop",
+      "dst": "filesrv",
+      "technique": "sql injection harvests service credentials; password reused on filesrv",
+      "cost": 0.3,
+      "requires": [
+        "reach:webshop"
+      ],
+      "grants": [
+        "session:filesrv"
+      ],
+      "check": "sqli+reuse",
+      "params": {
+        "via": "http://127.0.0.1:8771",
+        "target": "http://127.0.0.1:8772"
+      },
+      "detail": "users table leaks svc_backup; same password logs into filesrv"
+    },
+    {
+      "src": "filesrv",
+      "dst": "payments-db",
+      "technique": "path traversal steals db api token; token reads crown-jewel record",
+      "cost": 0.2,
+      "requires": [
+        "session:filesrv"
+      ],
+      "grants": [
+        "crown-access"
+      ],
+      "check": "traversal+token",
+      "params": {
+        "via": "http://127.0.0.1:8772",
+        "target": "http://127.0.0.1:8773"
+      },
+      "detail": "../vault/db_token.txt holds the payments API token"
+    }
+  ]
+}
